@@ -215,7 +215,7 @@ sub new {
     my $backend_module = "UI::Dialog::Backend::$use_backend";
 
     #require $backend_module;
-    eval("require $backend_module");
+    eval("require $backend_module"); ## no critic
     if ( $@ ){ die $@ };
 
     my $backend = $backend_module->new( %{ $bset } );
@@ -288,7 +288,7 @@ sub showMenu {
             if ( ref($condition) eq 'CODE' ){ # use a code ref like \& or sub{}
                 $cond_result = &{ $condition }( $used_context );
             }elsif( not ref($condition) ){ # assume a name of a function in context
-                eval( "\$cond_result = \$used_context->$condition");
+                eval( "\$cond_result = \$used_context->$condition"); ## no critic
                 if ( $@ ){
                     die $@;
                 }
@@ -343,7 +343,7 @@ sub showMenu {
             if ( ref($function) eq 'CODE' ){ # use a code ref like \& or sub{}
                 &{ $entries->{ $sel }->{'function'} }( $used_context );
             }elsif( not ref($function) ){ # assume a name of a function in context
-                eval( "\$used_context->$function" );
+                eval( "\$used_context->$function" ); ## no critic
                 if ( $@ ){
                     die $@ if not $dontdie;
 
@@ -351,7 +351,7 @@ sub showMenu {
                     if ( $dontdie && $catchn ){
                         my $err = $@;
                         if (not ref($catchn) ){
-                            eval( "\$used_context->$catchn( \$err )" );
+                            eval( "\$used_context->$catchn( \$err )" ); ## no critic
                         }
                     }
                 }
