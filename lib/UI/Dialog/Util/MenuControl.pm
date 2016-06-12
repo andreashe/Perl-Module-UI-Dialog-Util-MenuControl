@@ -4,7 +4,7 @@ package UI::Dialog::Util::MenuControl; ## A menu maker for dialog
 use strict;
 use vars qw($VERSION);
 
-our $VERSION='0.07';
+our $VERSION='0.08';
 
 
 
