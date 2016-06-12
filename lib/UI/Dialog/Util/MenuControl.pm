@@ -4,7 +4,7 @@ package UI::Dialog::Util::MenuControl; ## A menu maker for dialog
 use strict;
 use vars qw($VERSION);
 
-our $VERSION='0.08';
+our $VERSION='0.10';
 
 
 
@@ -182,8 +182,11 @@ our $VERSION='0.08';
 # AUTHOR
 # ======
 # Andreas Hernitscheck  ahernit(AT)cpan.org
-#
-#
+
+
+
+
+
 # parameters
 #
 #   context             context object wich can be used for all called procedures (self)
@@ -212,7 +215,7 @@ sub new {
     my $backend_module = "UI::Dialog::Backend::$use_backend";
 
     #require $backend_module;
-    eval("require $backend_module"); ## no critic
+    eval("require $backend_module");
     if ( $@ ){ die $@ };
 
     my $backend = $backend_module->new( %{ $bset } );
@@ -285,7 +288,7 @@ sub showMenu {
             if ( ref($condition) eq 'CODE' ){ # use a code ref like \& or sub{}
                 $cond_result = &{ $condition }( $used_context );
             }elsif( not ref($condition) ){ # assume a name of a function in context
-                eval( "\$cond_result = \$used_context->$condition"); ## no critic
+                eval( "\$cond_result = \$used_context->$condition");
                 if ( $@ ){
                     die $@;
                 }
@@ -340,7 +343,7 @@ sub showMenu {
             if ( ref($function) eq 'CODE' ){ # use a code ref like \& or sub{}
                 &{ $entries->{ $sel }->{'function'} }( $used_context );
             }elsif( not ref($function) ){ # assume a name of a function in context
-                eval( "\$used_context->$function" ); ## no critic
+                eval( "\$used_context->$function" );
                 if ( $@ ){
                     die $@ if not $dontdie;
 
@@ -348,7 +351,7 @@ sub showMenu {
                     if ( $dontdie && $catchn ){
                         my $err = $@;
                         if (not ref($catchn) ){
-                            eval( "\$used_context->$catchn( \$err )" ); ## no critic
+                            eval( "\$used_context->$catchn( \$err )" );
                         }
                     }
                 }
@@ -477,8 +480,6 @@ a shell. It does not use curses and has no large dependencies.
 
 =head1 REQUIRES
 
-L<UI::Dialog::Util::MenuControl> 
-
 
 =head1 METHODS
 
@@ -486,154 +487,13 @@ L<UI::Dialog::Util::MenuControl>
 
  $self->new();
 
-It is an OO class to render a Dialog menu by a tree of array and hashes
-with specific form.
-a shell. It does not use curses and has no large dependencies.
-
-
-SYNOPSIS
-========
-
-
-   use UI::Dialog::Util::MenuControl;
-
-   my $tree = {
-                   title       =>  'Conditinal behaviour',
-                   entries     =>  [
-                                       {
-                                           title       =>  'entry A (prework for B)',
-                                           function    =>  \&doA,
-                                           condition   =>  undef,
-                                       },
-                                       {
-                                           title       =>  'entry B',
-                                           function    =>  \&doB,
-                                           condition   =>  \&aWasCalled,
-                                       },
-                                       {
-                                           title       =>  'reset A (undo prework)',
-                                           function    =>  \&resetA,
-                                           condition   =>  \&aWasCalled,
-                                       },
-                                       {
-                                           title       =>  'has also submenus',
-                                           entries     =>  [
-                                                               {
-                                                                   title   =>  'sub b 1',
-                                                               },
-                                                               {
-                                                                   title   =>  'sub b 2',
-                                                               },
-                                                           ]
-                                       },
-
-                                   ],
-               };
-
-
-
-   my $menu_control = UI::Dialog::Util::MenuControl->new( menu => $tree );
-
-   $menu_control->run();
-
-To build a menu, you can nest nodes with the attributes
-
-title
-function    a reference to a function.
-condition   a reference to a function given a boolean result whether to display the item or not
-entries     array ref to further nodes
-context     a 'self" for the called function
-
-Context
-=======
-
-The context you can use globaly (via constructor) or in a node, can be used in different ways.
-It is an important feature to keep object oriented features, because the function call from a menu
-normaly does not know which object you want to use and usually you want to separate the menu from the
-working object.
-
-     ...
-
-     our $objA = Local::UsecaseA->new();
-
-
-     my $tree = {
-                     title       =>  'Conditinal behaviour',
-                     entries     =>  [
-                                         {
-                                             title       =>  'entry B',
-                                             function    =>  \&doB,
-                                             condition   =>  \&Local::UsecaseA::check,
-                                             context     =>  $objA,
-                                         },
-
-                                     ],
-                 };
-
-In this example an object objA has been loaded before and provides a check() method.
-To run this check method in $objA context, you can tell a context to the node.
-
-What does the absolute same:
-
-     my $tree = {
-                     title       =>  'Conditinal behaviour',
-                     entries     =>  [
-                                         {
-                                             title       =>  'entry B',
-                                             function    =>  \&doB,
-                                             condition   =>  sub{ $objA->check() },
-                                         },
-
-                                     ],
-                 };
-
-
-But here a more elegant way:
-
-     ...
-
-     our $objA = Local::UsecaseA->new();
-
-
-     my $tree = {
-                     title       =>  'Conditinal behaviour',
-                     entries     =>  [
-                                         {
-                                             title       =>  'entry B',
-                                             function    =>  'doB( "hello" )',  # it is a simple string. Also parameters possible.
-                                             condition   =>  'check',           # called as method on $objA
-                                         },
-
-                                     ],
-                 };
-
-
-   my $menu_control = UI::Dialog::Util::MenuControl->new(
-                                                              menu    => $tree,
-                                                              context => $objA,  # Set the context for methods
-                                                        );
-
-   $menu_control->run();
-
-
-
-
-
-LICENSE
-=======
-You can redistribute it and/or modify it under the conditions of LGPL.
-
-AUTHOR
-======
-Andreas Hernitscheck  ahernit(AT)cpan.org
-
-
 parameters
 
   context             context object wich can be used for all called procedures (self)
   backend             UI::Dialog Backend engine. E.g. CDialog (default), GDialog, KDialog, ...
   backend_settings    Values as hash transfered to backend constructor
   menu                Tree structure (see example above)
+  catch               An error catching function, which retrieves the error if first param (only if 'try' used)
 
 
 
@@ -657,6 +517,34 @@ Main loop method. Will return when the user selected the last exit field.
 
 Main control unit, but usually called by run().
 If you call it by yourself, you have to build your own loop around.
+
+
+
+=head1 Try a function
+
+Normaly the application dies if inside a function call a die() will happen. But you can try a function
+if it dies, it wont leave the menu.
+Therefore you have to add the magic work "try " before the function. As with dialogs the user may hit "cancel",
+I recomment to throw an exception (die) if that happens to make a difference to just "not entering a value".
+But if this menu call that function directly, the menu might also die then.
+
+  ...
+  function  => 'try askForValue',
+  ...
+
+As a try will eat all errors, you can handle them; Use 'catch' as parameter to point to an error handler function.
+This function will get the thrown error as first parameter.
+
+
+  ...
+  function  => 'try askForValue',
+  catch     => 'showErrorWithDialog',
+  ...
+
+The catch can also be globally set via constructor. So far catch can only take scalars describing a function in the same context
+as the rest. A coderef won't work. Errors in the catcher can't be handled and the menu will realy die.
+
+
 
 
 
@@ -730,8 +618,18 @@ But here a more elegant way:
                                                         ); 
    
    $menu_control->run();
-     
 
+
+
+
+=head1 Negative conditions
+
+It is quite simple. Just add the magic word "not " or "!" in front of a condition.
+
+  ...
+  function  => 'prepareFolder',
+  condition => 'not isFolderPrepared',
+  ...
 
 
 
@@ -742,15 +640,6 @@ But here a more elegant way:
 Andreas Hernitscheck  ahernit(AT)cpan.org
 
 
-parameters
-
-  context             context object wich can be used for all called procedures (self)
-  backend             UI::Dialog Backend engine. E.g. CDialog (default), GDialog, KDialog, ...
-  backend_settings    Values as hash transfered to backend constructor
-  menu                Tree structure (see example above)
-
-
-
 =head1 LICENSE
 
 You can redistribute it and/or modify it under the conditions of LGPL.
@@ -758,4 +647,3 @@ You can redistribute it and/or modify it under the conditions of LGPL.
 
 
 =cut
-
